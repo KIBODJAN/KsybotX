@@ -9,7 +9,7 @@ from aiohttp import ClientSession
 from pathlib import Path
 
 # === НАСТРОЙКИ ===
-TOKEN = "вставь_сюда_свой_токен"
+TOKEN = "7535965441:AAHLs_QtIgv8TYB7z7LGQTFiCSMx1kBaD8o"
 TON_WALLET = "UQAV3W64G7Db8C2jzPtNFAFleUiwS4JGy4-PC36qlpZ_ziSh"
 TON_API_KEY = "AFQZX3V5SD7FNIIAAAABYTAHKIUWZYRRNILLRGA5HPUYMX2QWGBLOKYQS72KKE6XPINAIHY"
 
@@ -36,9 +36,7 @@ async def cmd_start(message: types.Message):
         [types.KeyboardButton(text="🥇 Сочный — 5 TON")],
     ]
     await message.answer(
-        "Привет 😘 Я — Ксюша18+.
-Выбери один из пакетов, чтобы получить 🔥 контент.
-Оплата только через TON (сеть TON):",
+        "Привет 😘 Я — Ксюша18+.\nВыбери один из пакетов, чтобы получить 🔥 контент.\nОплата только через TON (сеть TON):",
         reply_markup=types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True),
     )
 
@@ -66,13 +64,9 @@ async def send_preview_and_pay(msg: types.Message, pack):
     await msg.answer_photo(preview, caption=f"Это превью 🔥 пакета '{pack}'")
 
     await msg.answer(
-        f"💳 Стоимость: <b>{PRICES[pack]} TON</b>
-"
-        f"Отправь <b>ровно {PRICES[pack]} TON</b> на мой TON-кошелек:
-"
-        f"<code>{TON_WALLET}</code>
-
-"
+        f"💳 Стоимость: <b>{PRICES[pack]} TON</b>\n"
+        f"Отправь <b>ровно {PRICES[pack]} TON</b> на мой TON-кошелек:\n"
+        f"<code>{TON_WALLET}</code>\n\n"
         f"После перевода — нажми кнопку 'Я оплатил ✅'",
         reply_markup=types.ReplyKeyboardMarkup(
             keyboard=[[types.KeyboardButton(text=f"Я оплатил ✅ {pack}")]],
@@ -97,11 +91,23 @@ async def check_payment(msg: types.Message):
 
     for tx in data.get("transactions", []):
         if tx["in_msg"].get("source") and float(tx["in_msg"].get("value", 0)) / 10**9 >= ton_amount:
-            await msg.answer("✅ Оплата найдена! Получай ссылку на приватный канал 🔒")
-            await msg.answer("Вот твоя ссылка: https://t.me/твой_приват_канал")  # <-- ВСТАВЬ СЮДА СВОЮ ССЫЛКУ
+            await msg.answer("✅ Оплата найдена! Получай свои фотки 😈")
+            await send_package_content(msg)
             return
 
     await msg.answer("❌ Оплата не найдена. Убедись, что ты отправил правильную сумму и попробуй позже.")
+
+# === ВЫДАЧА КОНТЕНТА ===
+async def send_package_content(msg: types.Message):
+    files = sorted(CONTENT_DIR.glob("*"))
+    if not files:
+        await msg.answer("⚠️ Контент пока не загружен.")
+        return
+    for file in files:
+        if file.suffix in [".jpg", ".jpeg", ".png"]:
+            await msg.answer_photo(FSInputFile(file))
+        elif file.suffix in [".mp4", ".mov"]:
+            await msg.answer_video(FSInputFile(file))
 
 # === ЗАПУСК ===
 async def main():
